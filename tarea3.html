@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Atrapa el Círculo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 90%;
+            height: 500px;
+            border: 2px solid #333;
+            position: relative;
+            background-color: #fff;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        #target-circle {
+            width: 50px;
+            height: 50px;
+            background-color: #FF5733;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transition: background-color 0.1s ease;
+        }
+
+        #target-circle:active {
+            background-color: #FFC300;
+        }
+
+        #score-display {
+            margin-top: 20px;
+            font-size: 1.8em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        #instructions {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 22px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Atrapa el Círculo</h1>
+    <p id="instructions">Haz clic en el círculo rojo para ganar puntos.</p>
+    <div id="game-container">
+        <div id="target-circle"></div>
+    </div>
+    <p id="score-display">Puntos: 0</p>
+    <button id="start-button">Empezar Juego</button>
+
+    <script>
+        const circuloObjetivo = document.getElementById('target-circle');
+        const areaJuego = document.getElementById('game-container');
+        const marcadorPuntos = document.getElementById('score-display');
+        const botonInicio = document.getElementById('start-button');
+
+        let puntos = 0;
+        let idIntervalo;
+        const tiempoMovimiento = 1500;
+
+        function actualizarPuntos() {
+            marcadorPuntos.textContent = `Puntos: ${puntos}`;
+        }
+
+        function moverCirculo() {
+            const anchoContenedor = areaJuego.offsetWidth;
+            const altoContenedor = areaJuego.offsetHeight;
+            const tamanoCirculo = circuloObjetivo.offsetWidth;
+
+            const posX = Math.floor(Math.random() * (anchoContenedor - tamanoCirculo));
+            const posY = Math.floor(Math.random() * (altoContenedor - tamanoCirculo));
+
+            circuloObjetivo.style.left = `${posX}px`;
+            circuloObjetivo.style.top = `${posY}px`;
+        }
+
+        function manejarClicCirculo() {
+            puntos++;
+            actualizarPuntos();
+            moverCirculo();
+            clearInterval(idIntervalo);
+            idIntervalo = setInterval(moverCirculo, tiempoMovimiento);
+        }
+
+        function iniciarJuego() {
+            puntos = 0;
+            actualizarPuntos();
+            botonInicio.style.display = 'none';
+            circuloObjetivo.style.display = 'block';
+            moverCirculo();
+            idIntervalo = setInterval(moverCirculo, tiempoMovimiento);
+            circuloObjetivo.addEventListener('click', manejarClicCirculo);
+        }
+
+        circuloObjetivo.style.display = 'none';
+        botonInicio.addEventListener('click', iniciarJuego);
+    </script>
+</body>
+</html>

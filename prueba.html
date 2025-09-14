@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #F8F1E5;
+            position: relative;
+            min-height: 100vh;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 100vw;
+            grid-template-rows: 80px auto auto auto;
+            grid-template-areas:
+                "header"
+                "main"
+                "aside"
+                "footer";
+        }
+
+        #desplegar {
+            position: absolute;
+            left: -10000px;
+        }
+
+        .container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 50px;
+            height: 50px;
+            z-index: 30;
+        }
+
+        .mostrar {
+            display: grid;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            color: #2E4057;
+            font-size: 28px;
+            border-radius: 5px;
+        }
+
+        .ocultar {
+            display: none;
+            grid-area: 1 / 1;
+            place-items: center;
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            color: #F8F1E5;
+            font-size: 35px;
+            border-radius: 5px;
+        }
+
+        #desplegar:checked ~ .container label.mostrar {
+            display: none;
+        }
+
+        #desplegar:checked ~ .container label.ocultar {
+            display: grid;
+        }
+
+        .menu {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #8B3A3A;
+            display: grid;
+            place-items: center;
+            gap: 20px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 20;
+        }
+
+        #desplegar:checked ~ .menu {
+            transform: translateX(0);
+        }
+
+        .menu > a {
+            font-size: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-family: 'EB Garamond', serif;
+            cursor: pointer;
+            color: #F8F1E5;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px 20px;
+        }
+
+        .menu > a:hover {
+            background-color: #F8F1E5;
+            color: #8B3A3A;
+            transform: scale(1.1);
+        }
+
+        .header {
+            grid-area: header;
+            background-color: #F8F1E5;
+            position: relative;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .titulo {
+            font-family: 'Cinzel', serif;
+            font-size: 25px;
+            text-align: center;
+            color: #2E4057;
+        }
+
+        .main {
+            min-height: 500px;
+            width: 100%;
+            grid-area: main;
+            background-color: #F8F1E5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .main.active-selection {
+            min-height: auto;
+            justify-content: center;
+        }
+
+        .main h2 {
+            width: 100%;
+            text-align: center;
+            font-size: 25px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 15px;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: 'EB Garamond', serif;
+            cursor: pointer;
+            color: #4A4A4A;
+        }
+
+        input {
+            display: none;
+        }
+
+        .aside {
+            grid-area: aside;
+            background-color: #F8F1E5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #volver-btn {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #F8F1E5;
+            background-color: #2E4057;
+            display: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            align-self: center;
+        }
+
+        #volver-btn.show {
+            display: block;
+        }
+
+        #mapa-container {
+            transform: scale(0);
+            transition: transform 0.4s ease;
+            transform-origin: center;
+            margin: 0 auto;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        #mapa-container.visible {
+            transform: scale(1);
+        }
+
+        .lugar {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .lugar:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        #lugares-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding: 10px;
+        }
+
+        #titulo-destacados {
+            margin-top: 10px;
+            font-family: 'Cinzel', serif;
+            color: #2E4057;
+            font-size: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        #mapa {
+            display: block;
+            margin: 0 auto;
+        }
+
+        h3 {
+            font-family: 'Playfair Display', serif;
+            color: #4A4A4A;
+        }
+
+        p {
+            font-family: 'EB Garamond', serif;
+            color: #4A4A4A;
+        }
+
+        .opcion {
+            font-size: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-family: 'EB Garamond', serif;
+            cursor: pointer;
+            color: #4A4A4A;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            text-align: center;
+            width: 80%;
+            max-width: 300px;
+            margin-bottom: 10px;
+        }
+
+        .opcion.selected {
+            background-color: #8B3A3A;
+            color: #F8F1E5;
+            transform: scale(1.1);
+            padding: 10px;
+            width: 80%;
+            max-width: 300px;
+            margin: 10px auto;
+        }
+
+        .opcion.hidden {
+            display: none;
+        }
+
+        .opcion:not(.selected):hover {
+            background-color: #8B3A3A;
+            color: #F8F1E5;
+            transform: scale(1.1);
+            padding: 10px;
+        }
+
+        .imagen {
+            width: 100%;
+            height: 120px;
+            background-color: #ccc;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            object-fit: cover;
+        }
+
+        @media screen and (min-width: 432px) {
+            .main {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-items: flex-start;
+                min-height: 500px;
+                padding: 10px;
+            }
+
+            .main h2 {
+                width: 100%;
+            }
+
+            .main.active-selection {
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .opcion {
+                width: 45%;
+                margin-bottom: 10px;
+            }
+
+            .opcion.selected {
+                width: 45%;
+                margin: 10px auto;
+            }
+
+            #lugares-container {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-around;
+                align-items: stretch;
+            }
+
+            .lugar {
+                width: 48%;
+                margin-bottom: 20px;
+                transition: all 0.3s ease-in-out;
+            }
+
+            .lugar:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                cursor: pointer;
+            }
+
+            .menu > a {
+                font-size: 25px;
+                padding: 10px 20px;
+            }
+
+            .menu > a:hover {
+                background-color: #F8F1E5;
+                color: #8B3A3A;
+                transform: scale(1.1);
+            }
+        }
+
+        @media screen and (min-width: 768px) {
+            .mostrar,
+            .ocultar,
+            .container {
+                display: none;
+            }
+
+            body {
+                grid-template-rows: 80px 50px auto auto;
+                grid-template-areas:
+                    "header"
+                    "menu-area"
+                    "main"
+                    "aside"
+                    "footer";
+            }
+
+            .header {
+                height: 80px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .menu {
+                grid-area: menu-area;
+                position: static;
+                width: 100%;
+                height: 50px;
+                background-color: #F8F1E5;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 20px;
+                transform: translateX(0);
+                padding: 0 20px;
+                z-index: 10;
+            }
+
+            .menu > a {
+                font-size: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                font-family: 'EB Garamond', serif;
+                cursor: pointer;
+                color: #4A4A4A;
+                transition: all 0.3s ease;
+                border-radius: 10px;
+                text-align: center;
+                padding: 5px 10px;
+                text-decoration: none;
+            }
+
+            .menu > a:hover {
+                background-color: #8B3A3A;
+                color: #F8F1E5;
+                transform: scale(1.1);
+                padding: 10px;
+            }
+
+            /* Desktop Specific Styles for direct loading */
+            .main h2 {
+                display: none; /* Hide the main heading on desktop */
+            }
+
+            .opcion {
+                display: none; /* Hide the radio button options on desktop */
+            }
+
+            #volver-btn {
+                display: none !important; /* Hide the "Regresar" button on desktop */
+            }
+
+            .aside {
+                display: flex; /* Ensure aside is visible */
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            #mapa-container {
+                transform: scale(1); /* Ensure map container is visible */
+                transition: none; /* Disable transition for direct display */
+                width: 80%;
+                max-width: 800px;
+            }
+
+            #mapa {
+                height: 300px;
+            }
+
+            #lugares-container {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: stretch;
+                gap: 20px;
+            }
+
+            .lugar {
+                width: calc(33.33% - 20px);
+                min-width: 250px;
+                max-width: 350px;
+                margin-bottom: 20px;
+            }
+
+
+            /* New styles for desktop to display all categories */
+            .main {
+                display: flex;
+                flex-direction: row; /* Arrange items in a row */
+                flex-wrap: wrap; /* Allow wrapping */
+                justify-content: center; /* Center items horizontally */
+                align-items: flex-start; /* Align items to the start of the cross axis */
+                gap: 20px; /* Space between items */
+                min-height: auto; /* Adjust height based on content */
+                padding: 20px; /* Add some padding */
+            }
+
+            .category-section {
+                width: calc(50% - 20px); /* Two columns with gap */
+                max-width: 600px; /* Limit individual section width */
+                background-color: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                padding: 15px;
+                margin-bottom: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .category-section h2 {
+                display: block; /* Show heading for each category */
+                width: 100%;
+                text-align: center;
+                font-family: 'Cinzel', serif;
+                color: #2E4057;
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+
+            .category-section .lugar {
+                width: 100%; /* Full width within its container */
+                margin-bottom: 15px;
+                padding: 10px;
+                box-shadow: none; /* Remove individual shadow if desired, or keep light one */
+                border: 1px solid #eee;
+            }
+
+            .category-section .lugar:last-child {
+                margin-bottom: 0;
+            }
+
+            .category-section .lugar:hover {
+                transform: scale(1.02);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+            }
+
+             /* Adjust map container to show the map independently */
+            #mapa-container {
+                transform: scale(1); /* Always visible */
+                width: 90%;
+                max-width: 900px; /* Allow wider map */
+                margin-top: 20px;
+            }
+
+            #mapa {
+                height: 400px; /* Larger map */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <input type="checkbox" id="desplegar">
+
+        <div class="container">
+            <label for="desplegar" class="mostrar">☰</label>
+            <label for="desplegar" class="ocultar">×</label>
+        </div>
+
+        <div class="titulo">Sitios Comerciales</div>
+    </div>
+
+    <div class="menu">
+        <a href="#main" class="op1">Inicio</a>
+        <a href="#hoteles-section" class="op2">Hoteles</a>
+        <a href="#restaurantes-section" class="op3">Restaurantes</a>
+        <a href="#cafes-section" class="op4">Cafés</a>
+        <a href="#bares-section" class="op5">Bares</a>
+        <a href="#parques-section" class="op6">Parques</a>
+    </div>
+
+    <div class="main" id="main">
+        <h2>Principales sitios comerciales</h2>
+        <input type="radio" id="hoteles">
+        <label for="hoteles" class="opcion">Hoteles <br><i class="bi bi-building"></i></label>
+        <input type="radio" id="restaurantes">
+        <label for="restaurantes" class="opcion">Restaurantes <br><i class="bi bi-egg-fried"></i></label>
+        <input type="radio" id="cafes">
+        <label for="cafes" class="opcion">Cafes <br><i class="bi bi-cup-hot"></i></label>
+        <input type="radio" id="bares">
+        <label for="bares" class="opcion">Bares <br><i class="bi bi-cup-straw"></i></i></label>
+        <input type="radio" id="parques">
+        <label for="parques" class="opcion">Parques <br><i class="bi bi-tree"></i></label>
+        <button id="volver-btn">Regresar</button>
+    </div>
+
+    <div class="aside">
+        <div id="mapa-container">
+            <iframe id="mapa" width="95%" height="200" style="border:0;" allowfullscreen loading="lazy"></iframe><br>
+            <h2 id="titulo-destacados"></h2>
+            <div id="lugares-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const labels = document.querySelectorAll('label.opcion');
+        const mapaContainer = document.getElementById('mapa-container');
+        const mapa = document.getElementById('mapa');
+        const volverBtn = document.getElementById('volver-btn');
+        const tituloDestacados = document.getElementById('titulo-destacados');
+        const lugaresContainer = document.getElementById('lugares-container');
+        const mainElement = document.querySelector('.main');
+        const mainH2 = mainElement.querySelector('h2'); // Reference to the initial H2 in main
+
+        const desplegarCheckbox = document.getElementById('desplegar');
+        const menuElement = document.querySelector('.menu');
+        const menuLinks = document.querySelectorAll('.menu a');
+
+        const datos = {
+            hoteles: [
+                { nombre: "Hotel Comayagua Golf Club", desc: "Hotel con campo de golf y piscina a las afueras de la ciudad.", img: "https://comayaguagolfclub.com/wp-content/uploads/2024/04/IMG-6029-102-780x595.jpg" },
+                { nombre: "Hotel Santa Maria de Comayagua", desc: "Hotel con piscina al aire libre y restaurante, ideal para familias y viajeros de negocios.", img: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/291196465.jpg?k=60add574473aeb1588aff1ce8310ade994cf24c09a8a38c8049783d8a902853a&o=&hp=1" },
+                { nombre: "Hotel Antigua Comayagua", desc: "Hotel colonial con piscina y restaurante cerca de la catedral.", img: "https://images.trvl-media.com/lodging/11000000/10030000/10021800/10021766/04857cb0.jpg?impolicy=resizecrop&rw=575&rh=575&ra=fill" },
+                { nombre: "Hotel La Posada de mi Viejo", desc: "Posada acogedora de estilo colonial, frente a la iglesia San Sebastián.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/02/70/2d/fd/getlstd-property-photo.jpg?w=900&h=500&s=1" },
+                { nombre: "Hotel Condesa Comayagua", desc: "Hotel moderno con piscina, restaurante y WiFi gratuito, cerca de Metroplaza.", img: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/390281307.jpg?k=f494f49761eb98b2c81385db90a48eadc50adb2517967aad7a8b266b5448e258&o=&hp=1" },
+            ],
+            restaurantes: [
+                { nombre: "Lo de Kerpo", desc: "Restaurante de asados uruguayos con sabor catracho.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/62/b6/25/photo0jpg.jpg" },
+                { nombre: "Restaurante El Torito", desc: "Asador popular con carnes a la parrilla y ambiente familiar.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0c/ec/ff/f2/wedding-dinner.jpg?w=900&h=-1&s=1" },
+                { nombre: "Restaurante La Baranda", desc: "Especialistas en mariscos frescos.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/0f/02/e7/20190616-115053-largejpg.jpg?w=1100&h=-1&s=1" },
+                { nombre: "Krifas", desc: "Cocina tradicional con toque moderno.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/15/94/19/c4/photo2jpg.jpg?w=900&h=500&s=1" },
+                { nombre: "Restaurante y Cabañas El Mirador", desc: "Ofrece platos típicos y un ambiente tranquilo con hermosa vista.", img: "https://iconosmag.com/wp-content/uploads/2021/09/restaurante-El-Mirador-2-min-1024x717.jpeg" },
+            ],
+            cafes: [
+                { nombre: "CALA Coffee Roasters", desc: "Cafetería especializada con variedad de cafés y crepas en Comayagua.", img: "https://bitingtheworld.weebly.com/uploads/1/0/2/4/102423298/cala-2_orig.jpeg" },
+                { nombre: "Expresso Americano", desc: "Cafetería con opciones clásicas de café y ambiente relajado.", img: "https://mallgaleriashn.com/storage/app/uploads/public/655/ce1/f44/655ce1f445506351348931.jpeg" },
+                { nombre: "Rosa Café", desc: "Café acogedor y moderno, popular por sus bebidas y ambiente relajado.", img: "https://lh5.googleusercontent.com/p/AF1QipNIDuM9X366kMkYTkm63AHAJzHYHZkGZ_WmIzVs=w480-h300-k-n-rw" },
+                { nombre: "Wafflo's", desc: "Cafetería moderna que ofrece waffles creativos y bubble teas únicos..", img: "https://franquician.com/wp-content/uploads/2023/10/wan07190_orig-1024x682.jpg" },
+                { nombre: "Oddity Coffee Roasters", desc: "Cafetería de especialidad con enfoque en café de alta calidad y buen servicio.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/68/ed/b5/coffee-bar-con-expertos.jpg?w=500&h=-1&s=1" },
+            ],
+            bares: [
+                { nombre: "Copacabana Bar", desc: "Ambiente vibrante con música en vivo y cócteles variados.", img: "https://media.evendo.com/locations-resized/RestaurantImages/360x263/23efa212-72c8-405d-88e6-9b1bf2cca059" },
+                { nombre: "El Balcón Beer Garden", desc: " Bar con temática de rock alternativo, ofrece cervezas internacionales y cócteles.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/18/9c/bd/05/noah-hudson-live-show.jpg?w=900&h=500&s=1" },
+                { nombre: "La Antoniana Gastro Pub", desc: "Gastro pub que combina cocina fusión con una amplia selección de bebidas.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/19/d9/50/77/la-antoniana-gastro-pub.jpg?w=900&h=500&s=1" },
+                { nombre: "LaBu Club", desc: "Bar y discoteca vibrante con música en vivo, cócteles creativos y eventos temáticos.", img: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/21/52/c7/e8/labu-bistro.jpg?w=900&h=500&s=1" },
+                { nombre: "Villa Real Karaoke y Discotec", desc: " Bar y discoteca con karaoke, ofrece una amplia variedad de bebidas y platillos.", img:"https://hondurastravel.com/wp-content/uploads/2016/07/villarreal-restaurant.jpg" },
+            ],
+            parques: [
+                { nombre: "Plaza Central León Alvarado", desc: "IPlaza principal con arquitectura colonial y eventos culturales.", img: "https://lh6.googleusercontent.com/proxy/Szta7sR8zmPOPTq1NL4NeO-DDvoD8XhwfTAanlr6NFM3KLuprmw4la9mZsFSLmscuZ2d4F9DaTr2YfauMh6L5xsv" },
+                { nombre: "Parque La Merced", desc: "Espacio verde con áreas para descanso y actividades sociales.", img: "https://www.laprensa.hn/binrepository/600x332/0c0/0d0/none/11004/PLOS/fr-religioso-150419_2_.24_LP1276098_MG286584910.jpg" },
+                { nombre: "Parque San Francisco", desc: "Plaza histórica junto a la iglesia San Francisco, con la Campana Antonina y museo arqueológico.", img: "https://150845871.v2.pressablecdn.com/wp-content/uploads/2015/06/Las-plazas-de-Comayagua-en-su-mayoria-cuentan-con-belleza-escenica.jpg" },
+                { nombre: "Plaza de la Jueventud", desc: "Espacio moderno para actividades culturales y recreativas, con áreas verdes y murales coloridos.", img: "https://www.laprensa.hn/binrepository/1200x805/0c88/1200d630/none/11004/UKBO/fr-comayagua-1304191_LP1275629_MG286584772.jpg" }
+            ]
+        };
+
+        function loadCategory(category) {
+            // Mobile-specific display logic for labels and main container
+            if (window.innerWidth < 768) {
+                mainElement.style.height = 'auto';
+                // Labels visibility handled by the click listener now
+                mainElement.classList.add('active-selection');
+                volverBtn.classList.add('show');
+            } else {
+                // For desktop, clear specific category display
+                document.querySelectorAll('.category-section').forEach(section => section.remove());
+                mainElement.classList.remove('active-selection');
+            }
+
+            mapaContainer.classList.add('visible');
+            const categoriaNombre = category.charAt(0).toUpperCase() + category.slice(1);
+            tituloDestacados.textContent = `${categoriaNombre} destacados`;
+
+            lugaresContainer.innerHTML = '';
+            const lugares = datos[category] || [];
+            lugares.forEach(({ nombre, desc, img }) => {
+                const div = document.createElement('div');
+                div.className = 'lugar';
+                div.innerHTML = `
+                    <img class="imagen" src="${img}" alt="Imagen de ${nombre}">
+                    <h3>${nombre}</h3>
+                    <p>${desc}</p>
+                `;
+                lugaresContainer.appendChild(div);
+            });
+
+            // Original map URLs
+            switch (category) {
+                case 'hoteles':
+                    mapa.src = "https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3873.888128887343!2d-87.64028149999999!3d14.4535489!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1shoteles+en+Comayagua!5e0!3m2!1ses-419!2shn!4v1715378884737!5m2!1ses-419!2shn";
+                    break;
+                case 'restaurantes':
+                    mapa.src = "https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3873.865314187843!2d-87.63874569999999!3d14.4547839!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1srestaurantes+en+Comayagua!5e0!3m2!1ses-419!2shn!4v1715378964441!5m2!1ses-419!2shn";
+                    break;
+                case 'cafes':
+                    mapa.src = "https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3873.9042145369487!2d-87.63874569999999!3d14.452749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1scafes+en+Comayagua!5e0!3m2!1ses-419!2shn!4v1715379023840!5m2!1ses-419!2shn";
+                    break;
+                case 'bares':
+                    mapa.src = "https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3873.9042145369487!2d-87.63874569999999!3d14.452749!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sbares+en+Comayagua!5e0!3m2!1ses-419!2shn!4v1715379084423!5m2!1ses-419!2shn";
+                    break;
+                case 'parques':
+                    mapa.src = "https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3873.92029996149!2d-87.6396112!3d14.45195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1sparques+en+Comayagua!5e0!3m2!1ses-419!2shn!4v1715379143213!5m2!1ses-419!2shn";
+                    break;
+            }
+        }
+
+        desplegarCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                menuElement.style.transform = 'translateX(0)';
+            } else {
+                menuElement.style.transform = 'translateX(100%)';
+            }
+        });
+
+        menuLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                // Close mobile menu
+                desplegarCheckbox.checked = false;
+                menuElement.style.transform = 'translateX(100%)';
+
+                const targetId = this.getAttribute('href').substring(1);
+                if (targetId === 'main') {
+                    // "Inicio" link behavior
+                    if (window.innerWidth >= 768) {
+                        loadAllCategoriesForDesktop(); // Show all categories on desktop
+                        mapaContainer.classList.remove('visible'); // Hide map when on "Inicio" for desktop
+                        tituloDestacados.textContent = '';
+                        lugaresContainer.innerHTML = '';
+                        mapa.src = '';
+                    } else {
+                        volverBtn.click(); // For smaller screens, behave like "Regresar"
+                    }
+                } else {
+                    const category = targetId.replace('-section', '');
+                    loadCategory(category);
+                }
+            });
+        });
+
+        labels.forEach(label => {
+            label.addEventListener('click', () => {
+                // Only execute this on smaller screens for radio button selection
+                if (window.innerWidth < 768) {
+                    labels.forEach(l => l.classList.remove('selected', 'hidden')); // Remove both classes first
+                    label.classList.add('selected'); // Add selected to clicked label
+
+                    labels.forEach(l => {
+                        if (l !== label) {
+                            l.classList.add('hidden'); // Hide other labels
+                        }
+                    });
+                    const id = label.getAttribute('for');
+                    loadCategory(id);
+                }
+            });
+        });
+
+        volverBtn.addEventListener('click', () => {
+            // Reset main to its initial mobile state
+            mainH2.style.display = 'block';
+            labels.forEach(l => {
+                l.classList.remove('hidden', 'selected'); // Ensure all labels are visible and not selected
+            });
+            mainElement.classList.remove('active-selection');
+            volverBtn.classList.remove('show');
+            mapaContainer.classList.remove('visible');
+            mainElement.style.height = '500px'; // Revert to initial height
+            mapa.src = '';
+            tituloDestacados.textContent = '';
+            lugaresContainer.innerHTML = '';
+        });
+
+        function createCategorySection(categoryName, places) {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+            section.id = `${categoryName}-section`; // Ensure consistent IDs for navigation
+
+            const title = document.createElement('h2');
+            title.textContent = categoryName.charAt(0).toUpperCase() + categoryName.slice(1) + ' destacados';
+            section.appendChild(title);
+
+            places.forEach(({ nombre, desc, img }) => {
+                const div = document.createElement('div');
+                div.className = 'lugar';
+                div.innerHTML = `
+                    <img class="imagen" src="${img}" alt="Imagen de ${nombre}">
+                    <h3>${nombre}</h3>
+                    <p>${desc}</p>
+                `;
+                section.appendChild(div);
+            });
+            return section;
+        }
+
+        function loadAllCategoriesForDesktop() {
+            // Clear existing content in main, except the initial h2 and labels (which are hidden by CSS)
+            // Preserve the original h2 and radio labels by recreating the initial structure
+            mainElement.innerHTML = `
+                <h2>Principales sitios comerciales</h2>
+                <input type="radio" id="hoteles">
+                <label for="hoteles" class="opcion">Hoteles <br><i class="bi bi-building"></i></label>
+                <input type="radio" id="restaurantes">
+                <label for="restaurantes" class="opcion">Restaurantes <br><i class="bi bi-egg-fried"></i></label>
+                <input type="radio" id="cafes">
+                <label for="cafes" class="opcion">Cafes <br><i class="bi bi-cup-hot"></i></label>
+                <input type="radio" id="bares">
+                <label for="bares" class="opcion">Bares <br><i class="bi bi-cup-straw"></i></i></label>
+                <input type="radio" id="parques">
+                <label for="parques" class="opcion">Parques <br><i class="bi bi-tree"></i></label>
+                <button id="volver-btn">Regresar</button>
+            `;
+            // Re-hide the main H2 and radio labels as per desktop CSS
+            mainElement.querySelector('h2').style.display = 'none';
+            mainElement.querySelectorAll('label.opcion').forEach(l => l.style.display = 'none');
+            document.getElementById('volver-btn').style.display = 'none';
+
+
+            // Append all category sections to the main element
+            for (const category in datos) {
+                const section = createCategorySection(category, datos[category]);
+                mainElement.appendChild(section);
+            }
+
+            // Ensure map and related elements are hidden when all categories are displayed
+            mapaContainer.classList.remove('visible');
+            tituloDestacados.textContent = '';
+            lugaresContainer.innerHTML = '';
+            mapa.src = '';
+        }
+
+        // Initial load for desktop view
+        window.addEventListener('load', () => {
+            if (window.innerWidth >= 768) {
+                loadAllCategoriesForDesktop();
+            }
+        });
+
+        // Handle resize events to adjust behavior
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                // If resizing to desktop, ensure all categories are displayed
+                // and mobile-specific elements are hidden/reset
+                loadAllCategoriesForDesktop();
+
+            } else {
+                // If resizing to mobile, reset to initial mobile state
+                // This means clearing the dynamically added category sections
+                // and showing the radio buttons and main H2.
+                mainElement.innerHTML = `
+                    <h2>Principales sitios comerciales</h2>
+                    <input type="radio" id="hoteles">
+                    <label for="hoteles" class="opcion">Hoteles <br><i class="bi bi-building"></i></label>
+                    <input type="radio" id="restaurantes">
+                    <label for="restaurantes" class="opcion">Restaurantes <br><i class="bi bi-egg-fried"></i></label>
+                    <input type="radio" id="cafes">
+                    <label for="cafes" class="opcion">Cafes <br><i class="bi bi-cup-hot"></i></label>
+                    <input type="radio" id="bares">
+                    <label for="bares" class="opcion">Bares <br><i class="bi bi-cup-straw"></i></i></label>
+                    <input type="radio" id="parques">
+                    <label for="parques" class="opcion">Parques <br><i class="bi bi-tree"></i></label>
+                    <button id="volver-btn">Regresar</button>
+                `;
+                // Ensure correct display for mobile elements
+                mainElement.querySelector('h2').style.display = 'block';
+                document.querySelectorAll('label.opcion').forEach(l => l.style.display = 'flex'); // Show labels for mobile
+                document.getElementById('volver-btn').style.display = 'none'; // Initially hidden
+                document.getElementById('volver-btn').classList.remove('show');
+                mapaContainer.classList.remove('visible');
+                mapa.src = '';
+                tituloDestacados.textContent = '';
+                lugaresContainer.innerHTML = '';
+                mainElement.classList.remove('active-selection'); // Reset class
+                mainElement.style.height = '500px'; // Reset height
+            }
+        });
+    </script>
+</body>
+</html>

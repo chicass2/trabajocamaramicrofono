@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laberinto Vibrante</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            color: #e0e0e0;
+        }
+
+        #game-container {
+            position: relative;
+            width: 700px;
+            height: 500px;
+            border: 4px solid #0f4c75;
+            background-color: #272740;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(15, 76, 117, 0.8);
+            border-radius: 10px;
+        }
+
+        #player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #ff9a8d;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 1px solid #ff6c6a;
+            box-sizing: border-box;
+            left: 20px;
+            top: 20px;
+            z-index: 10;
+            border-radius: 5px;
+            transition: background-color 0.1s ease;
+        }
+
+        .obstacle {
+            position: absolute;
+            background-color: #a2a8d3;
+            border: 1px solid #7d84bd;
+            box-sizing: border-box;
+            border-radius: 3px;
+        }
+
+        #obs1 { width: 100px; height: 30px; top: 50px; left: 100px; }
+        #obs2 { width: 30px; height: 150px; top: 50px; left: 100px; }
+        #obs3 { width: 150px; height: 30px; top: 170px; left: 0px; }
+        #obs4 { width: 30px; height: 100px; top: 170px; left: 150px; }
+        #obs5 { width: 120px; height: 30px; top: 250px; left: 50px; }
+        #obs6 { width: 30px; height: 100px; top: 100px; left: 300px; }
+        #obs7 { width: 180px; height: 30px; top: 100px; left: 300px; }
+        #obs8 { width: 30px; height: 120px; top: 100px; left: 450px; }
+        #obs9 { width: 100px; height: 30px; top: 250px; left: 300px; }
+        #obs10 { width: 30px; height: 150px; top: 250px; left: 370px; }
+        #obs11 { width: 150px; height: 30px; top: 370px; left: 200px; }
+        #obs12 { width: 30px; height: 80px; top: 370px; left: 350px; }
+        #obs13 { width: 80px; height: 30px; top: 420px; left: 450px; }
+        #obs14 { width: 30px; height: 100px; top: 300px; left: 550px; }
+        #obs15 { width: 100px; height: 30px; top: 300px; left: 550px; }
+        #obs16 { width: 30px; height: 150px; top: 0px; left: 600px; }
+        #obs17 { width: 120px; height: 30px; top: 120px; left: 580px; }
+
+
+        #goal {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: #c0d8f0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 25px;
+            font-weight: bold;
+            border: 1px solid #9bbcd4;
+            box-sizing: border-box;
+            bottom: 20px;
+            right: 20px;
+            z-index: 5;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player">🏎️</div>
+        <div class="obstacle" id="obs1"></div>
+        <div class="obstacle" id="obs2"></div>
+        <div class="obstacle" id="obs3"></div>
+        <div class="obstacle" id="obs4"></div>
+        <div class="obstacle" id="obs5"></div>
+        <div class="obstacle" id="obs6"></div>
+        <div class="obstacle" id="obs7"></div>
+        <div class="obstacle" id="obs8"></div>
+        <div class="obstacle" id="obs9"></div>
+        <div class="obstacle" id="obs10"></div>
+        <div class="obstacle" id="obs11"></div>
+        <div class="obstacle" id="obs12"></div>
+        <div class="obstacle" id="obs13"></div>
+        <div class="obstacle" id="obs14"></div>
+        <div class="obstacle" id="obs15"></div>
+        <div class="obstacle" id="obs16"></div>
+        <div class="obstacle" id="obs17"></div>
+        <div id="goal">🏁</div>
+    </div>
+
+    <script>
+        const player = document.getElementById('player');
+        const gameContainer = document.getElementById('game-container');
+        const obstacles = document.querySelectorAll('.obstacle');
+        const goal = document.getElementById('goal');
+
+        const initialPlayerX = 20;
+        const initialPlayerY = 20;
+        let playerX = initialPlayerX;
+        let playerY = initialPlayerY;
+        const playerSize = 30;
+        const step = 10;
+
+        let containerWidth, containerHeight;
+
+        function updateContainerDimensions() {
+            containerWidth = gameContainer.offsetWidth;
+            containerHeight = gameContainer.offsetHeight;
+        }
+
+        function updatePlayerPosition() {
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+        }
+
+        function checkCollision(nextX, nextY) {
+            const playerRect = {
+                left: nextX,
+                top: nextY,
+                right: nextX + playerSize,
+                bottom: nextY + playerSize
+            };
+
+            if (playerRect.left < 0 || playerRect.right > containerWidth ||
+                playerRect.top < 0 || playerRect.bottom > containerHeight) {
+                return true;
+            }
+
+            for (let i = 0; i < obstacles.length; i++) {
+                const obs = obstacles[i];
+                const obsLeftInContainer = obs.offsetLeft;
+                const obsTopInContainer = obs.offsetTop;
+                const obsRightInContainer = obsLeftInContainer + obs.offsetWidth;
+                const obsBottomInContainer = obsTopInContainer + obs.offsetHeight;
+
+                if (playerRect.left < obsRightInContainer &&
+                    playerRect.right > obsLeftInContainer &&
+                    playerRect.top < obsBottomInContainer &&
+                    playerRect.bottom > obsTopInContainer) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkGoal() {
+            const playerCurrentRect = {
+                left: playerX,
+                top: playerY,
+                right: playerX + playerSize,
+                bottom: playerY + playerSize
+            };
+
+            const goalRect = {
+                left: goal.offsetLeft,
+                top: goal.offsetTop,
+                right: goal.offsetLeft + goal.offsetWidth,
+                bottom: goal.offsetTop + goal.offsetHeight
+            };
+
+            if (playerCurrentRect.left < goalRect.right &&
+                playerCurrentRect.right > goalRect.left &&
+                playerCurrentRect.top < goalRect.bottom &&
+                playerCurrentRect.bottom > goalRect.top) {
+                alert('¡Felicidades! ¡Has llegado a la meta! 🎉');
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            playerX = initialPlayerX;
+            playerY = initialPlayerY;
+            updatePlayerPosition();
+            player.style.backgroundColor = '#ff9a8d';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            let newPlayerX = playerX;
+            let newPlayerY = playerY;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    newPlayerY -= step;
+                    break;
+                case 'ArrowDown':
+                    newPlayerY += step;
+                    break;
+                case 'ArrowLeft':
+                    newPlayerX -= step;
+                    break;
+                case 'ArrowRight':
+                    newPlayerX += step;
+                    break;
+                default:
+                    return;
+            }
+
+            e.preventDefault();
+
+            if (!checkCollision(newPlayerX, newPlayerY)) {
+                playerX = newPlayerX;
+                playerY = newPlayerY;
+                updatePlayerPosition();
+                checkGoal();
+            } else {
+                player.style.backgroundColor = '#c0392b';
+                alert('¡Ups! Chocaste. Reiniciando el laberinto...');
+                resetGame();
+            }
+        });
+
+        window.addEventListener('load', () => {
+            updateContainerDimensions();
+            updatePlayerPosition();
+        });
+        window.addEventListener('resize', updateContainerDimensions);
+    </script>
+</body>
+</html>
